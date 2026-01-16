@@ -4,8 +4,7 @@ import numpy as np
 def activationFunction(x):
     return 1 / (1 + np.exp(-x))
 
-def squareIt(x):
-    return x * x
+
 
 class NeuralNetwork():
     def __init__(self , num_input_nodes , num_hidden_nodes , num_output_nodes , learning_rate):
@@ -14,8 +13,9 @@ class NeuralNetwork():
         self.num_output_nodes = num_output_nodes
         self.learning_rate = learning_rate
 
-        self.wih = np.random.rand(num_hidden_nodes , num_input_nodes)
-        self.who = np.random.rand(num_output_nodes , num_hidden_nodes)
+        # Initialize weights from a normal distribution centered at 0
+        self.wih = np.random.normal(0.0, pow(self.num_hidden_nodes, -0.5), (self.num_hidden_nodes, self.num_input_nodes))
+        self.who = np.random.normal(0.0, pow(self.num_output_nodes, -0.5), (self.num_output_nodes, self.num_hidden_nodes))
 
 
     def train(self , inputs_list , targets_list):
@@ -28,7 +28,8 @@ class NeuralNetwork():
         final_inputs = np.dot(self.who , hidden_outputs)
         final_outputs = activationFunction(final_inputs)
 
-        output_errors = squareIt(targets - final_outputs)
+        # ERROR = TARGET - ACTUAL (Simple difference, not squared for gradient)
+        output_errors = targets - final_outputs
         hidden_errors = np.dot(self.who.transpose() , output_errors)
 
         self.who += self.learning_rate * np.dot((output_errors * final_outputs * (1-final_outputs)) , hidden_outputs.transpose())
@@ -61,9 +62,3 @@ class NeuralNetwork():
         self.who = np.loadtxt('weights_hidden_output.csv' , dtype=np.float64 , delimiter=',' , ndmin=2)
 
             
-
-
-# nn = NeuralNetwork(9 , 6 , 9 , 0.3)
-
-
-

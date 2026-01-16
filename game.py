@@ -10,7 +10,7 @@ from nn import NeuralNetwork
 from random import randint
 import os
 
-neuralNetwork = NeuralNetwork(9 , 6 , 9 , 0.3)
+neuralNetwork = NeuralNetwork(9 , 18 , 9 , 0.1)
 
 input_hidden_path = "./weights_input_hidden.csv"
 hidden_output_path = "./weights_hidden_output.csv"
@@ -250,6 +250,10 @@ HEIGHT = 600
 
 
 screen = pygame.display.set_mode((WIDTH , HEIGHT))
+
+icon = pygame.image.load('./icon.png')
+pygame.display.set_icon(icon)
+
 pygame.display.set_caption("TIC TAC TOE")
 clock = pygame.time.Clock()
 frameRate = 50
@@ -391,11 +395,12 @@ while playing:
                         targets = [0,0,0,0,0,0,0,0,0]
                         targets[index] = 1
                         
-                        neuralNetwork.train(inputs , targets)
+                        training_inputs = [1.0 - x for x in inputs]
+
+                        for i in range(2):
+                            neuralNetwork.train(training_inputs , targets)
 
                         neuralNetwork.saveWeights()
-                        # print(inputs)
-                        # print(targets)
 
                         boardState = [
                             [' ' , ' ' , ' '],
