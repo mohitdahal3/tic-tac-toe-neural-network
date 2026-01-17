@@ -47,18 +47,15 @@ class NeuralNetwork():
 
         return final_outputs
     
-    def saveWeights(self):
-        with open('weights_input_hidden.csv' , 'w') as file:
+    def saveWeights(self, input_hidden_path, hidden_output_path):
+        with open(input_hidden_path, 'w') as file:
             for row in self.wih:
-                file.write(','.join(np.asarray(row , str)) + '\n')
-        
+                file.write(','.join(np.asarray(row, str)) + '\n')
 
-        with open('weights_hidden_output.csv' , 'w') as file:
+        with open(hidden_output_path, 'w') as file:
             for row in self.who:
-                file.write(','.join(np.asarray(row , str)) + '\n')
+                file.write(','.join(np.asarray(row, str)) + '\n')
 
-    def loadWeights(self):
-        self.wih = np.loadtxt('weights_input_hidden.csv' , dtype=np.float64 , delimiter=',' , ndmin=2)
-        self.who = np.loadtxt('weights_hidden_output.csv' , dtype=np.float64 , delimiter=',' , ndmin=2)
-
-            
+    def loadWeights(self, input_hidden_path, hidden_output_path):
+        self.wih = np.loadtxt(input_hidden_path, dtype=np.float64, delimiter=',', ndmin=2)
+        self.who = np.loadtxt(hidden_output_path, dtype=np.float64, delimiter=',', ndmin=2)

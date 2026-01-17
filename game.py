@@ -10,15 +10,31 @@ from nn import NeuralNetwork
 from random import randint
 import os
 
+
+######### PyInstaller support #########
+import sys
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+######### PyInstaller support #########
+
 neuralNetwork = NeuralNetwork(9 , 18 , 9 , 0.1)
 
-input_hidden_path = "./weights_input_hidden.csv"
-hidden_output_path = "./weights_hidden_output.csv"
+input_hidden_path = resource_path("./weights_input_hidden.csv")
+hidden_output_path = resource_path("./weights_hidden_output.csv")
 
 if os.path.exists(input_hidden_path) and os.path.exists(hidden_output_path):
-    neuralNetwork.loadWeights()
+    neuralNetwork.loadWeights(input_hidden_path, hidden_output_path)
 else:
-    neuralNetwork.saveWeights()
+    neuralNetwork.saveWeights(input_hidden_path, hidden_output_path)
 
 pygame.init()
 
@@ -213,35 +229,25 @@ def setWinningLine(winner):
             winningLine = [crossColor , ((WIDTH/2) + (lineSeparation * 1.5) + 10 , (HEIGHT/2) - (lineSeparation * 1.5) - 10) , ((WIDTH/2) - (lineSeparation * 1.5) - 10 , (HEIGHT/2) + (lineSeparation * 1.5) + 10)]
         
 
+
 def trainSequence():
     global boardState
+    while True:
+        boardState = [[' ' for _ in range(3)] for _ in range(3)]
+        trainingTurn = "Computer" if randint(0, 1) == 0 else "Player"
+        noOfTurnsToTrain = randint(0, 8)
 
-    trainingTurn = "Computer" if randint(0,1) == 0 else "Player"
-    noOfTurnsToTrain = randint(0 , 8)
-    # noOfTurnsToTrain = 1
-
-
-    for i in range(noOfTurnsToTrain):
-        positionToPlay = randint(0 , 8)
-        while (boardState[int(positionToPlay/3)][positionToPlay%3] != " "):
-            positionToPlay = randint(0 , 8)
+        for _ in range(noOfTurnsToTrain):
+            positionToPlay = randint(0, 8)
+            while boardState[positionToPlay // 3][positionToPlay % 3] != " ":
+                positionToPlay = randint(0, 8)
+            
+            boardState[positionToPlay // 3][positionToPlay % 3] = "O" if trainingTurn == "Computer" else "X"
+            trainingTurn = "Player" if trainingTurn == "Computer" else "Computer"
         
-        if(trainingTurn == "Computer"):
-            boardState[int(positionToPlay/3)][positionToPlay%3] = "O"
-            trainingTurn = "Player"
-        else:
-            boardState[int(positionToPlay/3)][positionToPlay%3] = "X"
-            trainingTurn = "Computer"
-        
-    if(gameSituation(boardState)[0] != "Playing" or trainingTurn != "Player"):
-        boardState = [
-                    [' ' , ' ' , ' '],
-                    [' ' , ' ' , ' '],
-                    [' ' , ' ' , ' ']
-                ]
-        trainSequence()
-
-
+        # Break only if we found a valid state for the user to train
+        if gameSituation(boardState)[0] == "Playing" and trainingTurn == "Player":
+            break
 
 
 
@@ -251,7 +257,7 @@ HEIGHT = 600
 
 screen = pygame.display.set_mode((WIDTH , HEIGHT))
 
-icon = pygame.image.load('./icon.png')
+icon = pygame.image.load(resource_path('./icon.png'))
 pygame.display.set_icon(icon)
 
 pygame.display.set_caption("TIC TAC TOE")
@@ -321,9 +327,6 @@ boardState = [
                 [' ' , ' ' , ' '],
                 [' ' , ' ' , ' ']          
             ]
-
-
-
 
 
 menu = "Main"
@@ -400,7 +403,7 @@ while playing:
                         for i in range(2):
                             neuralNetwork.train(training_inputs , targets)
 
-                        neuralNetwork.saveWeights()
+                        neuralNetwork.saveWeights(input_hidden_path, hidden_output_path)
 
                         boardState = [
                             [' ' , ' ' , ' '],
@@ -457,10 +460,6 @@ while playing:
                 if(gameSituation(boardState)[0] == "Player" or gameSituation(boardState)[0] == "Computer"):
                     setWinningLine(gameSituation(boardState))
             
-            
-        
-
-
 
     clock.tick(frameRate)
     pygame.display.flip()
@@ -468,6 +467,3 @@ while playing:
 
 
 pygame.quit()
-
-
-
